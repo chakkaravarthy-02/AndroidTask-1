@@ -56,6 +56,10 @@ class ContactListViewModel(
                 selectedContact = null
             )
         }
+        resetSelectedContact()
+    }
+
+    fun resetSelectedContact(){
         _selectedContactForExpandableScreen.value = null
     }
 }
