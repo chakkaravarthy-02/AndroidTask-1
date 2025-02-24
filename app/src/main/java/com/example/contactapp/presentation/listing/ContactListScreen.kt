@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.contactapp.domain.Contact
 import com.google.gson.Gson
 import com.squareup.moshi.Moshi
@@ -32,7 +33,6 @@ import java.net.URLEncoder
 
 @Composable
 fun ContactListScreen(
-    contacts: LazyPagingItems<Contact>,
     modifier: Modifier = Modifier,
     onAction: (ContactAction) -> Unit,
     navController: NavController,
@@ -40,6 +40,7 @@ fun ContactListScreen(
 ) {
 
     val state by contactListViewModel.state.collectAsState()
+    val contacts = contactListViewModel.contactPagingFlow.collectAsLazyPagingItems()
 
     LaunchedEffect(state.selectedContact) {
         state.selectedContact?.let {
