@@ -11,6 +11,7 @@ import com.example.contactapp.data.contactdb.ContactDatabase
 import com.example.contactapp.data.contactdb.ContactTable
 import com.example.contactapp.data.network.ContactApiService
 import com.example.contactapp.data.network.asDatabaseModel
+import io.ktor.util.network.UnresolvedAddressException
 import okio.IOException
 
 @OptIn(ExperimentalPagingApi::class)
@@ -56,7 +57,9 @@ class ContactRemoteMediator(
             )
         } catch (e: IOException){
             MediatorResult.Error(e)
-        } catch (e: HttpException){
+        } catch (e: UnresolvedAddressException) {  // No Internet
+            MediatorResult.Success(endOfPaginationReached = true)
+        }catch (e: HttpException){
             MediatorResult.Error(e)
         }
     }
