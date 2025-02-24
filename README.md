@@ -1,10 +1,10 @@
 ## 📸 Screenshots
 
 ### Contact List Screen
-![Contact List]![Image](https://github.com/user-attachments/assets/b548f54e-1c6a-474e-ae6c-542b2bc75326)
+(https://github.com/user-attachments/assets/b548f54e-1c6a-474e-ae6c-542b2bc75326)
 
 ### Contact Detail Screen
-![Contact Detail]("!https://github.com/user-attachments/assets/6a05dfab-3235-4d42-873c-19e706188ecc")
+(https://github.com/user-attachments/assets/0793c8f2-e616-42a4-8d39-263d46f37c28)
 
 
 # Contact List App (MVI + Clean Architecture)
