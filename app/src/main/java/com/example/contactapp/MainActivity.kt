@@ -72,6 +72,7 @@ class MainActivity : ComponentActivity() {
                             DetailScreen(
                                 contact = contactObject,
                                 detailViewModel = detailViewModel,
+                                navController = navController
                             )
                         }
                     }

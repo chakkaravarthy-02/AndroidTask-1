@@ -12,6 +12,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,6 +40,7 @@ fun ContactListScreen(
 ) {
 
     val state by contactListViewModel.state.collectAsState()
+
     LaunchedEffect(state.selectedContact) {
         state.selectedContact?.let {
             val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -46,6 +48,11 @@ fun ContactListScreen(
             val contactJson = jsonAdapter.toJson(it)
             val encodedJson = URLEncoder.encode(contactJson,"utf-8")
             navController.navigate("contact_Detail/${encodedJson}")
+        }
+    }
+    DisposableEffect(Unit){
+        onDispose {
+            contactListViewModel.resetSelectedState()
         }
     }
     Scaffold { innerPadding ->
@@ -88,7 +95,7 @@ fun ContactListScreen(
                     }
                     item {
                         if(contacts.loadState.append is LoadState.Loading){
-                            CircularProgressIndicator()
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                         }
                     }
                 }

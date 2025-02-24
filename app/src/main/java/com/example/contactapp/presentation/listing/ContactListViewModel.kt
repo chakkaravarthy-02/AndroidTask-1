@@ -42,4 +42,13 @@ class ContactListViewModel(
             }
         }
     }
+
+    fun resetSelectedState() {
+        _state.update {
+            it.copy(
+                isSelectedContact = false,
+                selectedContact = null
+            )
+        }
+    }
 }
