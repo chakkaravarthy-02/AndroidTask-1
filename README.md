@@ -1,7 +1,7 @@
 ## 📸 Screenshots
 
 ### Contact List Screen
-![Contact List]("C:\Users\saran chakkaravarthy\Downloads\Screenshot_2025-02-24-07-37-52-75_bb69cfc368fa8da454b14bdcb1ffe272.jpg")
+![Contact List]![Image](https://github.com/user-attachments/assets/b548f54e-1c6a-474e-ae6c-542b2bc75326)
 
 ### Contact Detail Screen
 ![Contact Detail]("!https://github.com/user-attachments/assets/6a05dfab-3235-4d42-873c-19e706188ecc")
