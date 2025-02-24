@@ -4,7 +4,7 @@
 ![Contact List]("C:\Users\saran chakkaravarthy\Downloads\Screenshot_2025-02-24-07-37-52-75_bb69cfc368fa8da454b14bdcb1ffe272.jpg")
 
 ### Contact Detail Screen
-![Contact Detail]("C:\Users\saran chakkaravarthy\Downloads\Screenshot_2025-02-24-07-37-57-45_bb69cfc368fa8da454b14bdcb1ffe272.jpg")
+![Contact Detail]("![Image](https://github.com/user-attachments/assets/6a05dfab-3235-4d42-873c-19e706188ecc)")
 
 
 # Contact List App (MVI + Clean Architecture)
