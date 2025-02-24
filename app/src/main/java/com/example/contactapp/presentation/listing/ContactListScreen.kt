@@ -33,6 +33,7 @@ import java.net.URLEncoder
 
 @Composable
 fun ContactListScreen(
+    isMobile: Boolean,
     modifier: Modifier = Modifier,
     onAction: (ContactAction) -> Unit,
     navController: NavController,
@@ -43,15 +44,17 @@ fun ContactListScreen(
     val contacts = contactListViewModel.contactPagingFlow.collectAsLazyPagingItems()
 
     LaunchedEffect(state.selectedContact) {
-        state.selectedContact?.let {
-            val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-            val jsonAdapter = moshi.adapter(Contact::class.java).lenient()
-            val contactJson = jsonAdapter.toJson(it)
-            val encodedJson = URLEncoder.encode(contactJson,"utf-8")
-            navController.navigate("contact_Detail/${encodedJson}")
+        if (isMobile) {
+            state.selectedContact?.let {
+                val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+                val jsonAdapter = moshi.adapter(Contact::class.java).lenient()
+                val contactJson = jsonAdapter.toJson(it)
+                val encodedJson = URLEncoder.encode(contactJson, "utf-8")
+                navController.navigate("contact_Detail/${encodedJson}")
+            }
         }
     }
-    DisposableEffect(Unit){
+    DisposableEffect(Unit) {
         onDispose {
             contactListViewModel.resetSelectedState()
         }
@@ -72,7 +75,8 @@ fun ContactListScreen(
                         .fillMaxWidth()
                         .padding(innerPadding),
                     contentPadding = PaddingValues(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     item {
                         Text(
@@ -95,7 +99,7 @@ fun ContactListScreen(
                         )
                     }
                     item {
-                        if(contacts.loadState.append is LoadState.Loading){
+                        if (contacts.loadState.append is LoadState.Loading) {
                             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                         }
                     }

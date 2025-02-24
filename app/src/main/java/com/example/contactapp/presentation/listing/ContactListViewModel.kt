@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.example.contactapp.data.network.toContact
+import com.example.contactapp.domain.Contact
 import com.example.contactapp.domain.ContactRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -27,6 +29,9 @@ class ContactListViewModel(
     private val _state = MutableStateFlow(ContactState())
     val state = _state.asStateFlow()
 
+    private val _selectedContactForExpandableScreen = MutableStateFlow<Contact?>(null)
+    val selectedContactForExpandableScreen: StateFlow<Contact?> = _selectedContactForExpandableScreen
+
     fun onAction(listingAction: ContactAction) {
         when (listingAction) {
             is ContactAction.SelectContact -> {
@@ -37,6 +42,7 @@ class ContactListViewModel(
                             selectedContact = listingAction.contact
                         )
                     }
+                    _selectedContactForExpandableScreen.value = listingAction.contact
                     delay(3000L)
                 }
             }
@@ -50,5 +56,6 @@ class ContactListViewModel(
                 selectedContact = null
             )
         }
+        _selectedContactForExpandableScreen.value = null
     }
 }
