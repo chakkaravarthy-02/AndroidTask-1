@@ -1,4 +1,4 @@
-package com.example.contactapp.data.network.datas
+package com.example.contactapp.data.network.model
 
 data class Registered(
     val age: Int,

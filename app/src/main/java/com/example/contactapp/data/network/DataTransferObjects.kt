@@ -2,7 +2,7 @@ package com.example.contactapp.data.network
 
 import com.example.contactapp.data.contactdb.ContactTable
 import com.example.contactapp.domain.Contact
-import com.example.contactapp.data.network.datas.Result
+import com.example.contactapp.data.network.model.Result
 
 
 fun List<Result>.asDatabaseModel(): List<ContactTable> {

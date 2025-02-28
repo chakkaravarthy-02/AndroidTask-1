@@ -1,6 +1,6 @@
 package com.example.contactapp.data.network
 
-import com.example.contactapp.data.network.datas.Contact
+import com.example.contactapp.data.network.model.Contact
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation

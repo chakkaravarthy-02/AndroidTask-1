@@ -1,7 +1,5 @@
 package com.example.contactapp.domain
 
-import android.util.Log
-import retrofit2.HttpException
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
@@ -13,6 +11,7 @@ import com.example.contactapp.data.network.ContactApiService
 import com.example.contactapp.data.network.asDatabaseModel
 import io.ktor.util.network.UnresolvedAddressException
 import okio.IOException
+import retrofit2.HttpException
 
 @OptIn(ExperimentalPagingApi::class)
 class ContactRemoteMediator(
