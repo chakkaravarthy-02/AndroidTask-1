@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -40,7 +41,7 @@ fun ContactListScreen(
     contactListViewModel: ContactListViewModel
 ) {
 
-    val state by contactListViewModel.state.collectAsState()
+    val state by contactListViewModel.state.collectAsStateWithLifecycle()
     val contacts = contactListViewModel.contactPagingFlow.collectAsLazyPagingItems()
 
     LaunchedEffect(state.selectedContact) {
@@ -100,7 +101,7 @@ fun ContactListScreen(
                     }
                     item {
                         if (contacts.loadState.append is LoadState.Loading) {
-                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).padding(vertical = 8.dp))
                         }
                     }
                 }
