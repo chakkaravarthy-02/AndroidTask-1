@@ -1,11 +1,13 @@
 package com.example.contactapp.presentation.detail
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -13,9 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
@@ -38,28 +38,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import com.example.contactapp.domain.Contact
-import com.example.contactapp.presentation.listing.ContactListViewModel
+import com.example.contactapp.presentation.SharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    contact: Contact?,
-    detailViewModel: DetailViewModel,
     navController: NavController,
-    contactListViewModel: ContactListViewModel,
+    sharedViewModel: SharedViewModel,
     isMobile: Boolean
 ) {
-
-    //val state by detailViewModel.state.collectAsState()
-    val selectedContact by contactListViewModel.selectedContactForExpandableScreen.collectAsState()
+    val selectedContact by sharedViewModel.selectedContactForExpandableScreen.collectAsState()
     val scrollState = rememberScrollState()
 
 
@@ -70,11 +62,8 @@ fun DetailScreen(
                     if (isMobile) {
                         IconButton(
                             onClick = {
-                                navController.navigate("contact_list_screen") {
-                                    popUpTo("contact_list_screen") {
-                                        inclusive = true
-                                    }
-                                }
+                                navController.popBackStack()
+                                sharedViewModel.resetSelectedId()
                             }
                         ) {
                             Icon(
@@ -83,12 +72,10 @@ fun DetailScreen(
                             )
                         }
                     }
-                },
-                actions = {
                     if (!isMobile && selectedContact != null) {
                         IconButton(
                             onClick = {
-                                contactListViewModel.resetSelectedContact()
+                                sharedViewModel.resetSelectedContact()
                             }
                         ) {
                             Icon(
@@ -98,19 +85,14 @@ fun DetailScreen(
                         }
                     }
                 },
-                title = {
-                },
                 modifier = Modifier,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
+                title = {  },
             )
         },
         modifier = Modifier.fillMaxSize(),
-        bottomBar = {},
-        snackbarHost = {},
-        floatingActionButton = {}
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -133,9 +115,10 @@ fun DetailScreen(
                         .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Spacer(modifier = Modifier.height(8.dp))
                     AsyncImage(
                         contentScale = ContentScale.Crop,
-                        model = if (isMobile) contact?.picture else selectedContact?.picture,
+                        model = if (isMobile) selectedContact?.picture else selectedContact?.picture,
                         contentDescription = "",
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
@@ -145,7 +128,7 @@ fun DetailScreen(
                     Spacer(modifier = Modifier.padding(16.dp))
                     Text(
                         fontSize = 22.sp,
-                        text = if (isMobile) "${contact?.firstName} ${contact?.secondName}" else "${selectedContact?.firstName} ${selectedContact?.secondName}",
+                        text = if (isMobile) "${selectedContact?.firstName} ${selectedContact?.secondName}" else "${selectedContact?.firstName} ${selectedContact?.secondName}",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
@@ -154,7 +137,7 @@ fun DetailScreen(
                         modifier = Modifier
                             .fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceDim,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     ) {
@@ -169,18 +152,21 @@ fun DetailScreen(
                             Spacer(modifier = Modifier.padding(8.dp))
                             ContactInfoRow(
                                 icon = Icons.Filled.Call,
-                                text = (if (isMobile) contact?.cell else selectedContact?.cell)
-                                    ?: ""
+                                text = (if (isMobile) selectedContact?.cell else selectedContact?.cell)
+                                    ?: "-",
+                                description = "mobile"
                             )
                             ContactInfoRow(
                                 icon = Icons.Filled.Email,
-                                text = (if (isMobile) contact?.email else selectedContact?.email)
-                                    ?: ""
+                                text = (if (isMobile) selectedContact?.email else selectedContact?.email)
+                                    ?: "-",
+                                description = "email"
                             )
                             ContactInfoRow(
                                 icon = Icons.Filled.Person,
-                                text = (if (isMobile) contact?.gender else selectedContact?.gender)
-                                    ?: ""
+                                text = (if (isMobile) selectedContact?.gender else selectedContact?.gender)
+                                    ?: "-",
+                                description = "gender"
                             )
                         }
                     }
@@ -191,18 +177,32 @@ fun DetailScreen(
 }
 
 @Composable
-fun ContactInfoRow(modifier: Modifier = Modifier, icon: ImageVector, text: String) {
+fun ContactInfoRow(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    text: String,
+    description: String
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(imageVector = icon, contentDescription = "")
         Spacer(modifier = Modifier.padding(8.dp))
-        Text(
-            text = text,
-            fontWeight = FontWeight.Normal
-        )
+        Column(
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = text,
+                fontWeight = FontWeight.Normal
+            )
+            Text(
+                text = description,
+                fontWeight = FontWeight.Thin
+            )
+        }
     }
     Spacer(modifier = Modifier.padding(8.dp))
 }

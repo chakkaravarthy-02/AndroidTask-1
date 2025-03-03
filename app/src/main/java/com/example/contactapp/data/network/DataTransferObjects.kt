@@ -16,6 +16,7 @@ fun List<Result>.asDatabaseModel(): List<ContactTable> {
             secondName = it.name.last,
             phone = it.phone,
             picture = it.picture.medium,
+            uuid = it.login.uuid
         )
     }
 }
@@ -31,5 +32,6 @@ fun ContactTable.toContact(): Contact {
         secondName = secondName,
         phone = phone,
         picture = picture,
+        uuid = uuid
     )
 }

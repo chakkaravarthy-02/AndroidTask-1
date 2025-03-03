@@ -1,70 +1,91 @@
 package com.example.contactapp.presentation.listing
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.example.contactapp.domain.Contact
-import com.google.gson.Gson
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import java.net.URLEncoder
+import com.example.contactapp.presentation.SharedViewModel
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactListScreen(
-    isMobile: Boolean,
     modifier: Modifier = Modifier,
     onAction: (ContactAction) -> Unit,
     navController: NavController,
-    contactListViewModel: ContactListViewModel
+    sharedViewModel: SharedViewModel,
+    isMobile: Boolean
 ) {
-
-    val state by contactListViewModel.state.collectAsStateWithLifecycle()
-    val contacts = contactListViewModel.contactPagingFlow.collectAsLazyPagingItems()
-
-    LaunchedEffect(state.selectedContact) {
-        if (isMobile) {
-            state.selectedContact?.let {
-                val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-                val jsonAdapter = moshi.adapter(Contact::class.java).lenient()
-                val contactJson = jsonAdapter.toJson(it)
-                val encodedJson = URLEncoder.encode(contactJson, "utf-8")
-                navController.navigate("contact_Detail/${encodedJson}")
-            }
-        }
+    if (isMobile){
+        sharedViewModel.resetSelectedId()
+    } else {
+        sharedViewModel.setIndexWithDetailContact()
     }
-    DisposableEffect(Unit) {
-        onDispose {
-            contactListViewModel.resetSelectedState()
+    val contacts = sharedViewModel.contactPagingFlow.collectAsLazyPagingItems()
+    val selectedContact by sharedViewModel.selectedContactId.collectAsStateWithLifecycle()
+
+    Scaffold (
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "My Contacts",
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            //Drawer Open
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = ""
+                        )
+                    }
+                }
+            )
         }
-    }
-    Scaffold { innerPadding ->
+    ){ innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
         ) {
             if (contacts.loadState.refresh is LoadState.Loading) {
                 CircularProgressIndicator(
@@ -75,37 +96,41 @@ fun ContactListScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(innerPadding),
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(vertical = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    item {
-                        Text(
-                            text = "My Contacts",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    items(contacts.itemCount) { index ->
-                        ContactItemUI(
-                            contact = contacts[index],
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onAction(ContactAction.SelectContact(contacts[index]))
-                                }
-                                .padding(horizontal = 16.dp)
-                        )
+                    items(contacts.itemCount) { index  ->
+                        val contact = contacts[index]
+                        contact?.let {
+                            ContactItemUI(
+                                contact = contacts[index],
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (selectedContact != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+                                    .clickable {
+                                        if (isMobile) navController.navigate("contact_Detail")
+                                        onAction(ContactAction.SelectContact(contacts[index]))
+                                        sharedViewModel.setIndex(it.id)
+                                    },
+                                isSelected = selectedContact == it.id
+                            )
+                        }
                     }
                     item {
                         if (contacts.loadState.append is LoadState.Loading) {
-                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).padding(vertical = 8.dp))
+                            CircularProgressIndicator(modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(vertical = 8.dp))
                         }
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
         }
     }
 }
+
+

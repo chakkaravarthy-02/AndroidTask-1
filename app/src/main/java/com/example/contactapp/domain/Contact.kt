@@ -9,5 +9,6 @@ data class Contact(
     val firstName: String,
     val secondName: String,
     val phone: String,
-    val picture: String
+    val picture: String,
+    val uuid: String
 )

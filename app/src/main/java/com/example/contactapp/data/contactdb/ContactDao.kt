@@ -16,4 +16,7 @@ interface ContactDao {
 
     @Query("DELETE FROM ContactTable")
     suspend fun clearAll()
+
+    @Query("SELECT * FROM ContactTable")
+    fun getAll(): List<ContactTable>
 }

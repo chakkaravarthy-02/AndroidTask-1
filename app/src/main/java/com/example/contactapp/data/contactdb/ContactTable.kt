@@ -14,5 +14,6 @@ data class ContactTable(
     @ColumnInfo val firstName: String,
     @ColumnInfo val secondName: String,
     @ColumnInfo val phone: String,
-    @ColumnInfo val picture: String
+    @ColumnInfo val picture: String,
+    @ColumnInfo val uuid: String
 )

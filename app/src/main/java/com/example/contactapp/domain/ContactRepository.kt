@@ -15,7 +15,7 @@ class ContactRepository(
     fun getContacts(): Pager<Int,ContactTable> {
         return Pager(
             config = PagingConfig(
-                pageSize = 10,
+                pageSize = 25,
                 enablePlaceholders = false,
                 prefetchDistance = 2
             ),
