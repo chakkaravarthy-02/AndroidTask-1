@@ -1,8 +1,6 @@
 package com.example.contactapp.presentation.listing
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -11,8 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,9 +19,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,12 +75,31 @@ fun ContactListScreen(
     val selectedContact by sharedViewModel.selectedContactId.collectAsStateWithLifecycle()
     val tabList = listOf("Personal Contacts", "Api Contacts")
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
-    val showTabRow by remember {
-        derivedStateOf {
-            val isScrollingUp =
-                listState.firstVisibleItemIndex == 0 || listState.firstVisibleItemScrollOffset < 10
-            isScrollingUp || listState.isScrollInProgress.not()
+    var showTabRow by remember {
+        mutableStateOf(true)
+    }
+
+    val firstVisibleItemIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
+    val firstVisibleItemOffset by remember { derivedStateOf { listState.firstVisibleItemScrollOffset } }
+
+    // Track scroll direction
+    var prevIndex by remember { mutableIntStateOf(0) }
+    var prevOffset by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(firstVisibleItemIndex, firstVisibleItemOffset) {
+        val currentIndex = listState.firstVisibleItemIndex
+        val currentOffset = listState.firstVisibleItemScrollOffset
+
+        showTabRow = if (currentIndex > prevIndex) {
+            false
+        } else if (currentIndex == prevIndex) {
+            currentOffset <= prevOffset
+        } else {
+            true
         }
+
+        prevIndex = currentIndex
+        prevOffset = currentOffset
     }
 
 
@@ -111,6 +127,28 @@ fun ContactListScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            if (selectedIndex == 0) {
+                AnimatedVisibility(
+                    visible = showTabRow,
+                    enter = slideInVertically(initialOffsetY = { it }),
+                    exit = slideOutVertically(targetOffsetY = { it })
+                ) {
+                    FloatingActionButton(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        onClick = {
+                            //adding Screen
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = ""
+                        )
+                    }
+                }
+            }
         }
     ) { innerPadding ->
         Box(
@@ -123,13 +161,15 @@ fun ContactListScreen(
                 )
             } else {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(innerPadding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     AnimatedVisibility(
                         visible = showTabRow,
-                        enter = fadeIn() + slideInVertically(initialOffsetY = { -it }),
-                        exit = fadeOut() + slideOutVertically(targetOffsetY = { -it })
+                        enter = slideInVertically(initialOffsetY = { -it }),
+                        exit = slideOutVertically(targetOffsetY = { -it })
                     ) {
                         TabRow(
                             selectedTabIndex = selectedIndex,
@@ -148,6 +188,7 @@ fun ContactListScreen(
                         }
                     }
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier
                             .fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -178,7 +219,7 @@ fun ContactListScreen(
                                                                 name
                                                             )
                                                         )
-                                                        sharedViewModel.setIndex(it.id)
+                                                        if (!isMobile) sharedViewModel.setIndex(it.id)
                                                     },
                                                 isSelected = selectedContact == it.id
                                             )
@@ -201,7 +242,7 @@ fun ContactListScreen(
                                                 .clickable {
                                                     if (isMobile) navController.navigate("contact_Detail")
                                                     onAction(ContactAction.SelectContact(apiContacts[index]))
-                                                    sharedViewModel.setIndex(it.id)
+                                                    if (!isMobile) sharedViewModel.setIndex(it.id)
                                                 },
                                             isSelected = selectedContact == it.id
                                         )

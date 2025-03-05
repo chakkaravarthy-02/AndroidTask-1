@@ -17,6 +17,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CardDefaults
@@ -85,6 +87,29 @@ fun DetailScreen(
                         }
                     }
                 },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            //edit
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = ""
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            //edit
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = ""
+                        )
+                    }
+
+                },
                 modifier = Modifier,
                 colors = TopAppBarDefaults.topAppBarColors(
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -100,7 +125,6 @@ fun DetailScreen(
                 .padding(innerPadding)
         ) {
             if (!isMobile && selectedContact == null) {
-                // Show "Select a contact" message when no contact is selected
                 Text(
                     text = "Select a contact",
                     fontSize = 20.sp,
@@ -137,8 +161,8 @@ fun DetailScreen(
                         modifier = Modifier
                             .fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            containerColor = MaterialTheme.colorScheme.inverseOnSurface,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     ) {
                         Column {
