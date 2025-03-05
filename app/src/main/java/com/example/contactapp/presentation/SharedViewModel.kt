@@ -21,6 +21,13 @@ class SharedViewModel(
     repository: ContactRepository
 ) : ViewModel() {
 
+    val phoneContactPagingFlow = repository.getContacts()
+        .flow
+        .map { pagingData ->
+            pagingData.map { it.toContact() }
+        }
+        .cachedIn(viewModelScope)
+
     val contactPagingFlow = repository.getContacts()
         .flow
         .map { pagingData ->
@@ -28,8 +35,6 @@ class SharedViewModel(
         }
         .cachedIn(viewModelScope)
 
-    private val _state = MutableStateFlow(ContactState())
-    val state = _state.asStateFlow()
 
     private val _selectedContactId = MutableStateFlow<Int?>(null)
     var selectedContactId: StateFlow<Int?> = _selectedContactId

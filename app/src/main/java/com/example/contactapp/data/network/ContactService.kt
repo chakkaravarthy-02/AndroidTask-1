@@ -23,7 +23,7 @@ class ContactApiService {
     suspend fun getContacts(page: Int, pageCount: Int): Contact {
         return httpClient.get("${BASE_URL}api") {
             parameter("page", page)
-            parameter("results", pageCount) // Corrected from "result" to "results"
+            parameter("results", pageCount)
         }.body()
     }
 }

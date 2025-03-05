@@ -1,38 +1,55 @@
 package com.example.contactapp.presentation.listing
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
@@ -40,7 +57,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.contactapp.presentation.SharedViewModel
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ContactListScreen(
     modifier: Modifier = Modifier,
@@ -49,15 +66,28 @@ fun ContactListScreen(
     sharedViewModel: SharedViewModel,
     isMobile: Boolean
 ) {
-    if (isMobile){
+    if (isMobile) {
         sharedViewModel.resetSelectedId()
     } else {
         sharedViewModel.setIndexWithDetailContact()
     }
-    val contacts = sharedViewModel.contactPagingFlow.collectAsLazyPagingItems()
-    val selectedContact by sharedViewModel.selectedContactId.collectAsStateWithLifecycle()
 
-    Scaffold (
+    val listState = rememberLazyListState()
+    val apiContacts = sharedViewModel.contactPagingFlow.collectAsLazyPagingItems()
+    val phoneContacts = sharedViewModel.phoneContactPagingFlow.collectAsLazyPagingItems()
+    val selectedContact by sharedViewModel.selectedContactId.collectAsStateWithLifecycle()
+    val tabList = listOf("Personal Contacts", "Api Contacts")
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val showTabRow by remember {
+        derivedStateOf {
+            val isScrollingUp =
+                listState.firstVisibleItemIndex == 0 || listState.firstVisibleItemScrollOffset < 10
+            isScrollingUp || listState.isScrollInProgress.not()
+        }
+    }
+
+
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = {
@@ -82,50 +112,113 @@ fun ContactListScreen(
                 }
             )
         }
-    ){ innerPadding ->
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            if (contacts.loadState.refresh is LoadState.Loading) {
+            if (apiContacts.loadState.refresh is LoadState.Loading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(innerPadding),
-                    contentPadding = PaddingValues(vertical = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    items(contacts.itemCount) { index  ->
-                        val contact = contacts[index]
-                        contact?.let {
-                            ContactItemUI(
-                                contact = contacts[index],
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(if (selectedContact != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
-                                    .clickable {
-                                        if (isMobile) navController.navigate("contact_Detail")
-                                        onAction(ContactAction.SelectContact(contacts[index]))
-                                        sharedViewModel.setIndex(it.id)
-                                    },
-                                isSelected = selectedContact == it.id
-                            )
+                    AnimatedVisibility(
+                        visible = showTabRow,
+                        enter = fadeIn() + slideInVertically(initialOffsetY = { -it }),
+                        exit = fadeOut() + slideOutVertically(targetOffsetY = { -it })
+                    ) {
+                        TabRow(
+                            selectedTabIndex = selectedIndex,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            tabList.forEachIndexed { index, title ->
+                                Tab(
+                                    selected = selectedIndex == index,
+                                    onClick = { selectedIndex = index },
+                                    text = { Text(title) }
+                                )
+                            }
                         }
                     }
-                    item {
-                        if (contacts.loadState.append is LoadState.Loading) {
-                            CircularProgressIndicator(modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(vertical = 8.dp))
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        when (selectedIndex) {
+                            0 -> {
+                                val sortedContacts =
+                                    phoneContacts.itemSnapshotList.items.sortedBy { it.firstName }
+                                val groupedContacts = sortedContacts.groupBy {
+                                    it.firstName.firstOrNull()?.uppercase() ?: "#"
+                                }
+                                groupedContacts.forEach { (letter, names) ->
+                                    stickyHeader { SectionHeader(letter) }
+                                    items(names) { name ->
+                                        name.let {
+                                            ContactItemUI(
+                                                contact = name,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 32.dp)
+                                                    .clip(RoundedCornerShape(12.dp))
+                                                    .background(if (selectedContact != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+                                                    .clickable {
+                                                        if (isMobile) navController.navigate("contact_Detail")
+                                                        onAction(
+                                                            ContactAction.SelectContact(
+                                                                name
+                                                            )
+                                                        )
+                                                        sharedViewModel.setIndex(it.id)
+                                                    },
+                                                isSelected = selectedContact == it.id
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            1 -> {
+                                items(apiContacts.itemCount) { index ->
+                                    val contact = apiContacts[index]
+                                    contact?.let {
+                                        ContactItemUI(
+                                            contact = apiContacts[index],
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 16.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(if (selectedContact != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+                                                .clickable {
+                                                    if (isMobile) navController.navigate("contact_Detail")
+                                                    onAction(ContactAction.SelectContact(apiContacts[index]))
+                                                    sharedViewModel.setIndex(it.id)
+                                                },
+                                            isSelected = selectedContact == it.id
+                                        )
+                                    }
+                                }
+                            }
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
+                        item {
+                            if (apiContacts.loadState.append is LoadState.Loading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .padding(vertical = 8.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
                 }
             }
@@ -133,4 +226,14 @@ fun ContactListScreen(
     }
 }
 
+@Composable
+fun SectionHeader(letter: String) {
+    Text(
+        text = letter,
+        fontSize = 16.sp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+    )
+}
 
