@@ -1,5 +1,6 @@
 package com.example.contactapp.presentation.listing
 
-data class ContactState(
-    val isSelectedContact: Boolean = false
+data class ContactViewState(
+    val isSelectedContact: Boolean = false,
+    var selectedContactId: Int? = 0
 )

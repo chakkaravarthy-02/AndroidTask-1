@@ -3,6 +3,8 @@ package com.example.contactapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,9 +34,10 @@ import com.example.contactapp.domain.ContactRepository
 import com.example.contactapp.presentation.SharedViewModel
 import com.example.contactapp.presentation.detail.DetailScreen
 import com.example.contactapp.presentation.listing.ContactListScreen
-import com.example.contactapp.presentation.listing.ContactViewModelFactory
+import com.example.contactapp.presentation.SharedViewModelFactory
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+
 
 class MainActivity : ComponentActivity() {
 
@@ -64,7 +67,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val sharedViewModel: SharedViewModel = viewModel(
-                    factory = ContactViewModelFactory(repository)
+                    factory = SharedViewModelFactory(repository)
                 )
 
                 val navController = rememberNavController()
@@ -122,17 +125,34 @@ fun CompactScreen(
     sharedViewModel: SharedViewModel,
     modifier: Modifier = Modifier
 ) {
-    NavHost(navController, startDestination = "contact_list_screen") {
-        composable("contact_list_screen") {
+    NavHost(
+        navController,
+        startDestination = "contact_list_screen",
+    ) {
+        composable(
+            "contact_list_screen",
+            enterTransition = {
+                slideInHorizontally{-it}
+            },
+            exitTransition = {
+                slideOutHorizontally{-it}
+            }
+        ) {
             ContactListScreen(
                 sharedViewModel = sharedViewModel,
-                onAction = sharedViewModel::onAction,
+                onAction = sharedViewModel::onContactAction,
                 navController = navController,
                 isMobile = true,
             )
         }
         composable(
-            "contact_detail"
+            "contact_detail",
+            enterTransition = {
+                slideInHorizontally{it}
+            },
+            exitTransition = {
+                slideOutHorizontally{it}
+            }
         ) {
             DetailScreen(
                 navController = navController,
@@ -155,7 +175,7 @@ fun ExpandedScreen(
         Box(modifier = Modifier.weight(firstScreenFloat)) {
             ContactListScreen(
                 sharedViewModel = sharedViewModel,
-                onAction = sharedViewModel::onAction,
+                onAction = sharedViewModel::onContactAction,
                 navController = navController,
                 isMobile = false
             )

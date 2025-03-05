@@ -1,3 +1,7 @@
 package com.example.contactapp.presentation.detail
 
-//for future updates
+import com.example.contactapp.domain.Contact
+
+sealed interface DetailAction {
+    data class DeleteContact(val contact: Contact?): DetailAction
+}

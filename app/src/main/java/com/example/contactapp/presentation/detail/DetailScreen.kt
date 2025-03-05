@@ -53,7 +53,7 @@ fun DetailScreen(
     sharedViewModel: SharedViewModel,
     isMobile: Boolean
 ) {
-    val selectedContact by sharedViewModel.selectedContactForExpandableScreen.collectAsState()
+    val detailViewState by sharedViewModel.detailState.collectAsState()
     val scrollState = rememberScrollState()
 
 
@@ -74,7 +74,7 @@ fun DetailScreen(
                             )
                         }
                     }
-                    if (!isMobile && selectedContact != null) {
+                    if (!isMobile && detailViewState.selectedContact != null) {
                         IconButton(
                             onClick = {
                                 sharedViewModel.resetSelectedContact()
@@ -100,7 +100,7 @@ fun DetailScreen(
                     }
                     IconButton(
                         onClick = {
-                            //edit
+                            sharedViewModel.onDetailAction(DetailAction.DeleteContact(detailViewState.selectedContact))
                         }
                     ) {
                         Icon(
@@ -114,7 +114,7 @@ fun DetailScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
-                title = {  },
+                title = { },
             )
         },
         modifier = Modifier.fillMaxSize(),
@@ -124,7 +124,7 @@ fun DetailScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (!isMobile && selectedContact == null) {
+            if (!isMobile && detailViewState.selectedContact == null) {
                 Text(
                     text = "Select a contact",
                     fontSize = 20.sp,
@@ -142,7 +142,7 @@ fun DetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     AsyncImage(
                         contentScale = ContentScale.Crop,
-                        model = if (isMobile) selectedContact?.picture else selectedContact?.picture,
+                        model = if (isMobile) detailViewState.selectedContact?.picture else detailViewState.selectedContact?.picture,
                         contentDescription = "",
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
@@ -152,7 +152,10 @@ fun DetailScreen(
                     Spacer(modifier = Modifier.padding(16.dp))
                     Text(
                         fontSize = 22.sp,
-                        text = if (isMobile) "${selectedContact?.firstName} ${selectedContact?.secondName}" else "${selectedContact?.firstName} ${selectedContact?.secondName}",
+                        text = if (isMobile)
+                            "${detailViewState.selectedContact?.firstName} ${detailViewState.selectedContact?.secondName}"
+                        else
+                            "${detailViewState.selectedContact?.firstName} ${detailViewState.selectedContact?.secondName}",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
@@ -176,19 +179,19 @@ fun DetailScreen(
                             Spacer(modifier = Modifier.padding(8.dp))
                             ContactInfoRow(
                                 icon = Icons.Filled.Call,
-                                text = (if (isMobile) selectedContact?.cell else selectedContact?.cell)
+                                text = (if (isMobile) detailViewState.selectedContact?.cell else detailViewState.selectedContact?.cell)
                                     ?: "-",
                                 description = "mobile"
                             )
                             ContactInfoRow(
                                 icon = Icons.Filled.Email,
-                                text = (if (isMobile) selectedContact?.email else selectedContact?.email)
+                                text = (if (isMobile) detailViewState.selectedContact?.email else detailViewState.selectedContact?.email)
                                     ?: "-",
                                 description = "email"
                             )
                             ContactInfoRow(
                                 icon = Icons.Filled.Person,
-                                text = (if (isMobile) selectedContact?.gender else selectedContact?.gender)
+                                text = (if (isMobile) detailViewState.selectedContact?.gender else detailViewState.selectedContact?.gender)
                                     ?: "-",
                                 description = "gender"
                             )
@@ -224,7 +227,7 @@ fun ContactInfoRow(
             )
             Text(
                 text = description,
-                fontWeight = FontWeight.Thin
+                fontWeight = FontWeight.W300
             )
         }
     }

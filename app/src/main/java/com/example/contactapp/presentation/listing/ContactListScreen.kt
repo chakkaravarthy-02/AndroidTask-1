@@ -69,16 +69,20 @@ fun ContactListScreen(
         sharedViewModel.setIndexWithDetailContact()
     }
 
-    val listState = rememberLazyListState()
     val apiContacts = sharedViewModel.contactPagingFlow.collectAsLazyPagingItems()
     val phoneContacts = sharedViewModel.phoneContactPagingFlow.collectAsLazyPagingItems()
-    val selectedContact by sharedViewModel.selectedContactId.collectAsStateWithLifecycle()
-    val tabList = listOf("Personal Contacts", "Api Contacts")
+
+    val contactState by sharedViewModel.contactViewState.collectAsStateWithLifecycle()
+
+    //tab row variables
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     var showTabRow by remember {
         mutableStateOf(true)
     }
+    val tabList = listOf("Personal Contacts", "Api Contacts")
 
+    //scrolling position variables
+    val listState = rememberLazyListState()
     val firstVisibleItemIndex by remember { derivedStateOf { listState.firstVisibleItemIndex } }
     val firstVisibleItemOffset by remember { derivedStateOf { listState.firstVisibleItemScrollOffset } }
 
@@ -136,10 +140,11 @@ fun ContactListScreen(
                     exit = slideOutVertically(targetOffsetY = { it })
                 ) {
                     FloatingActionButton(
+                        modifier = Modifier.padding(16.dp),
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.primary,
                         onClick = {
-                            //adding Screen
+                            //TODO
                         }
                     ) {
                         Icon(
@@ -211,7 +216,7 @@ fun ContactListScreen(
                                                     .fillMaxWidth()
                                                     .padding(horizontal = 32.dp)
                                                     .clip(RoundedCornerShape(12.dp))
-                                                    .background(if (selectedContact != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+                                                    .background(if (contactState.selectedContactId != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
                                                     .clickable {
                                                         if (isMobile) navController.navigate("contact_Detail")
                                                         onAction(
@@ -221,10 +226,13 @@ fun ContactListScreen(
                                                         )
                                                         if (!isMobile) sharedViewModel.setIndex(it.id)
                                                     },
-                                                isSelected = selectedContact == it.id
+                                                isSelected = contactState.selectedContactId == it.id
                                             )
                                         }
                                     }
+                                }
+                                item {
+                                    Spacer(modifier = Modifier.height(12.dp))
                                 }
                             }
 
@@ -238,13 +246,13 @@ fun ContactListScreen(
                                                 .fillMaxWidth()
                                                 .padding(horizontal = 16.dp)
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .background(if (selectedContact != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+                                                .background(if (contactState.selectedContactId != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
                                                 .clickable {
                                                     if (isMobile) navController.navigate("contact_Detail")
                                                     onAction(ContactAction.SelectContact(apiContacts[index]))
                                                     if (!isMobile) sharedViewModel.setIndex(it.id)
                                                 },
-                                            isSelected = selectedContact == it.id
+                                            isSelected = contactState.selectedContactId == it.id
                                         )
                                     }
                                 }

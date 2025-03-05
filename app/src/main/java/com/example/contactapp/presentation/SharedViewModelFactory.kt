@@ -1,12 +1,11 @@
-package com.example.contactapp.presentation.listing
+package com.example.contactapp.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.contactapp.domain.ContactRepository
-import com.example.contactapp.presentation.SharedViewModel
 
 @Suppress("unchecked_cast")
-class ContactViewModelFactory(
+class SharedViewModelFactory(
     private val repository: ContactRepository
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
