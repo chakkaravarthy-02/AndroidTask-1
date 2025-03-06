@@ -1,10 +1,15 @@
 package com.example.contactapp
 
+import android.app.AlertDialog
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +23,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -30,23 +37,36 @@ import androidx.window.layout.WindowInfoTracker
 import com.example.compose.ContactAppTheme
 import com.example.contactapp.data.contactdb.getDatabase
 import com.example.contactapp.data.network.ContactNetwork.contactNet
+import com.example.contactapp.data.provider.ContactProvider
 import com.example.contactapp.domain.ContactRepository
 import com.example.contactapp.presentation.SharedViewModel
 import com.example.contactapp.presentation.detail.DetailScreen
 import com.example.contactapp.presentation.listing.ContactListScreen
 import com.example.contactapp.presentation.SharedViewModelFactory
+import com.example.contactapp.presentation.add_edit.AddScreen
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 
 class MainActivity : ComponentActivity() {
 
+    private val CONTACT_PERMISSION_REQUEST = 1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        checkAndRequestPermission()
+        setUpContent()
+
+    }
+
+    private fun setUpContent() {
         val db = getDatabase(applicationContext)
         val apiService = contactNet
+        val contentResolver = this.contentResolver
+        val contactProvider = ContactProvider(contentResolver)
         val repository = ContactRepository(
-            apiService, db
+            apiService, db, contactProvider
         )
 
         setContent {
@@ -103,6 +123,23 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun checkAndRequestPermission(): Boolean {
+        return if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+            == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CONTACTS)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            true
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS),
+                CONTACT_PERMISSION_REQUEST
+            )
+            false
+        }
+    }
 }
 
 @OptIn(ExperimentalContracts::class)
@@ -132,10 +169,10 @@ fun CompactScreen(
         composable(
             "contact_list_screen",
             enterTransition = {
-                slideInHorizontally{-it}
+                slideInHorizontally { -it }
             },
             exitTransition = {
-                slideOutHorizontally{-it}
+                slideOutHorizontally { -it }
             }
         ) {
             ContactListScreen(
@@ -148,16 +185,29 @@ fun CompactScreen(
         composable(
             "contact_detail",
             enterTransition = {
-                slideInHorizontally{it}
+                slideInHorizontally { it }
             },
             exitTransition = {
-                slideOutHorizontally{it}
+                slideOutHorizontally { it }
             }
         ) {
             DetailScreen(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
                 isMobile = true
+            )
+        }
+        composable(
+            "add_contact",
+            enterTransition = {
+                slideInVertically { it }
+            },
+            exitTransition = {
+                slideOutVertically { it }
+            }
+        ) {
+            AddScreen(
+                sharedViewModel = sharedViewModel
             )
         }
     }

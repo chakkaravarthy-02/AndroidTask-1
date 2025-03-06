@@ -1,5 +1,6 @@
 package com.example.contactapp.presentation
 
+import android.content.ContentResolver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.contactapp.domain.ContactRepository

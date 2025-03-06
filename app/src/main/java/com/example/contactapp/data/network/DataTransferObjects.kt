@@ -1,8 +1,10 @@
 package com.example.contactapp.data.network
 
 import com.example.contactapp.data.contactdb.ContactTable
+import com.example.contactapp.data.contactdb.PhoneContactTable
 import com.example.contactapp.domain.Contact
 import com.example.contactapp.data.network.model.Result
+import com.example.contactapp.domain.PhoneContact
 
 
 fun List<Result>.asDatabaseModel(): List<ContactTable> {
@@ -32,6 +34,20 @@ fun ContactTable.toContact(): Contact {
         secondName = secondName,
         phone = phone,
         picture = picture,
-        uuid = uuid
+        uuid = uuid,
+        displayName = null
     )
+}
+
+fun List<PhoneContactTable>.toPhoneContact() : List<PhoneContact>{
+    return map{
+        PhoneContact(
+            id = it.id,
+            displayName = it.displayName,
+            email = it.email,
+            gender = it.gender,
+            phoneNumber = it.phoneNumber,
+            picture = it.picture
+        )
+    }
 }

@@ -17,3 +17,13 @@ data class ContactTable(
     @ColumnInfo val picture: String,
     @ColumnInfo val uuid: String
 )
+
+@Entity
+data class PhoneContactTable(
+    @PrimaryKey val id: String,
+    @ColumnInfo val displayName: String,
+    @ColumnInfo val email: String?,
+    @ColumnInfo val gender: String?,
+    @ColumnInfo val phoneNumber: String?,
+    @ColumnInfo val picture: String?
+)
