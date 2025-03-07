@@ -2,8 +2,8 @@ package com.example.contactapp.data.contactdb
 
 import androidx.paging.PagingSource
 import androidx.room.Dao
-import androidx.room.Upsert
 import androidx.room.Query
+import androidx.room.Upsert
 
 @Dao
 interface ContactDao {
@@ -25,4 +25,7 @@ interface ContactDao {
 
     @Query("SELECT * FROM ContactTable")
     fun getAll(): List<ContactTable>
+
+    @Query("DELETE FROM PhoneContactTable WHERE phoneNumber = :number")
+    suspend fun deleteContactByNumber(number: String)
 }

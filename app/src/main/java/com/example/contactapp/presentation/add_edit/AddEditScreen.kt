@@ -53,6 +53,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.contactapp.R
 import com.example.contactapp.presentation.SharedViewModel
+import com.example.contactapp.presentation.listing.ContactAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,21 +132,37 @@ fun AddEditScreen(
                 actions = {
                     Button(
                         onClick = {
-                            sharedViewModel.onAddEditAction(
-                                if (isCreate)
-                                    AddEditAction.SaveContact(
-                                        nameText.value,
-                                        phoneText.value,
-                                        surnameText.value,
-                                        imageUri.value
+                            val message =
+                                if (isCreate) {
+                                    sharedViewModel.onAddEditAction(
+                                        AddEditAction.SaveContact(
+                                            nameText.value,
+                                            phoneText.value,
+                                            surnameText.value,
+                                            imageUri.value
+                                        )
                                     )
-                                else AddEditAction.EditContact(
-                                    nameText.value,
-                                    phoneText.value,
-                                    surnameText.value,
-                                    imageUri.value
-                                )
-                            )
+                                    navController.popBackStack()
+                                    "Contact Saved successfully"
+                                } else {
+                                    sharedViewModel.onAddEditAction(
+                                        AddEditAction.EditContact(
+                                            nameText.value,
+                                            phoneText.value,
+                                            surnameText.value,
+                                            imageUri.value
+                                        )
+                                    )
+                                    navController.navigate(
+                                        "contact_list_Screen"
+                                    ){
+                                        popUpTo("contact_detail"){
+                                            inclusive = true
+                                        }
+                                    }
+                                    "Edited"
+                                }
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                         }
                     ) {
                         Text(text = if (isCreate) "Save" else "Edit")

@@ -23,5 +23,6 @@ data class PhoneContactTable(
     @PrimaryKey val id: String,
     @ColumnInfo val displayName: String,
     @ColumnInfo val phoneNumber: String?,
-    @ColumnInfo val picture: String?
+    @ColumnInfo val picture: String?,
+    @ColumnInfo val type: String?
 )

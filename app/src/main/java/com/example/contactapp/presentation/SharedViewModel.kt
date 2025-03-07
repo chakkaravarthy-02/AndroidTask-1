@@ -77,7 +77,14 @@ class SharedViewModel(
     fun onDetailAction(detailAction: DetailAction) {
         when (detailAction) {
             is DetailAction.DeleteContact -> {
-                //TODO()
+                viewModelScope.launch(Dispatchers.IO) {
+                    try {
+                        repository.deleteContact(detailAction.contact?.phoneNumber)
+                        loadPhoneContacts()
+                    }catch (e: Exception){
+                        println("$e error in deleting the contact")
+                    }
+                }
             }
         }
     }
@@ -85,10 +92,33 @@ class SharedViewModel(
     fun onAddEditAction(addEditAction: AddEditAction) {
         when (addEditAction) {
             is AddEditAction.EditContact -> {
-                //TODO()
+                viewModelScope.launch(Dispatchers.IO) {
+                    try {
+                        repository.updateContact(
+                            addEditAction.nameText,
+                            addEditAction.phoneText,
+                            addEditAction.surnameText,
+                            addEditAction.picture
+                        )
+                    }catch (e: Exception){
+                        println("$e error in updating the contact")
+                    }
+                }
             }
+
             is AddEditAction.SaveContact -> {
-                //TODO()
+                viewModelScope.launch(Dispatchers.IO) {
+                    try {
+                        repository.saveContact(
+                            addEditAction.nameText,
+                            addEditAction.phoneText,
+                            addEditAction.surnameText,
+                            addEditAction.picture
+                        )
+                    }catch (e: Exception){
+                        println("$e error in saving the contact")
+                    }
+                }
             }
         }
     }

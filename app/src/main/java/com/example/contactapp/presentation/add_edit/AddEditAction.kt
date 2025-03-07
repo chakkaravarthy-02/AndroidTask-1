@@ -7,12 +7,12 @@ sealed interface AddEditAction {
         val nameText: String?,
         val phoneText: String?,
         val surnameText: String,
-        val value: Uri?
+        val picture: Uri?
     ) : AddEditAction
     data class EditContact(
         val nameText: String?,
         val phoneText: String?,
         val surnameText: String,
-        val value: Uri?
+        val picture: Uri?
     ) : AddEditAction
 }

@@ -6,5 +6,6 @@ data class PhoneContact(
     val phoneNumber: String?,
     override val picture: String?,
     override val firstName: String? = null,
-    override val secondName: String? = null
+    override val secondName: String? = null,
+    val type: String?
 ) : BaseContact

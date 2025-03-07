@@ -126,20 +126,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun checkAndRequestPermission(): Boolean {
-        return if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-            == PackageManager.PERMISSION_GRANTED &&
+    private fun checkAndRequestPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+            != PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CONTACTS)
-            == PackageManager.PERMISSION_GRANTED
+            != PackageManager.PERMISSION_GRANTED
         ) {
-            true
-        } else {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS),
                 CONTACT_PERMISSION_REQUEST
             )
-            false
         }
     }
 }

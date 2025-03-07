@@ -1,5 +1,6 @@
 package com.example.contactapp.presentation.detail
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,15 +31,21 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +55,7 @@ import coil.compose.AsyncImage
 import com.example.contactapp.R
 import com.example.contactapp.presentation.SharedViewModel
 import com.example.contactapp.presentation.add_edit.AddEditScreen
+import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,6 +66,8 @@ fun DetailScreen(
 ) {
     val detailViewState by sharedViewModel.detailState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+    var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -89,35 +100,33 @@ fun DetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = {
-                            if (isMobile){
-                                val isCreate = false
-                                navController.navigate("add_contact/$isCreate")
-                            }
+                    if (detailViewState.isPhoneContact == true) {
+                        IconButton(
+                            onClick = {
+                                if (isMobile) {
+                                    val isCreate = false
+                                    navController.navigate("add_contact/$isCreate")
+                                }
 
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = ""
-                        )
-                    }
-                    IconButton(
-                        onClick = {
-                            sharedViewModel.onDetailAction(
-                                DetailAction.DeleteContact(
-                                    detailViewState.selectedContact
-                                )
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = ""
                             )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = ""
-                        )
-                    }
+                        IconButton(
+                            onClick = {
+                                showDialog = true
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = ""
+                            )
+                        }
 
+                    }
                 },
                 modifier = Modifier,
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -133,6 +142,31 @@ fun DetailScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false }, // Close dialog
+                    title = { Text("Delete Contact?") },
+                    text = { Text("Are you sure you want to delete ${detailViewState.selectedPhoneContact?.displayName}?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            sharedViewModel.onDetailAction(
+                                DetailAction.DeleteContact(
+                                    detailViewState.selectedPhoneContact
+                                )
+                            )
+                            Toast.makeText(context, "deleted", Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
+                        }) {
+                            Text("Delete", color = Color.Red)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
             if (!isMobile && detailViewState.selectedContact == null && detailViewState.selectedPhoneContact == null) {
                 Text(
                     text = "Select a contact",
@@ -192,7 +226,7 @@ fun DetailScreen(
                                 icon = Icons.Filled.Call,
                                 text = (if (detailViewState.isPhoneContact == true) detailViewState.selectedPhoneContact?.phoneNumber else detailViewState.selectedContact?.cell)
                                     ?: "-",
-                                description = "mobile"
+                                description = if (detailViewState.isPhoneContact == true) detailViewState.selectedPhoneContact?.type else "mobile"
                             )
                             if (detailViewState.isPhoneContact == false) {
                                 ContactInfoRow(
@@ -222,7 +256,7 @@ fun ContactInfoRow(
     modifier: Modifier = Modifier,
     icon: ImageVector,
     text: String,
-    description: String
+    description: String?
 ) {
     Row(
         modifier = Modifier
@@ -240,7 +274,7 @@ fun ContactInfoRow(
                 fontWeight = FontWeight.Normal
             )
             Text(
-                text = description,
+                text = description ?: "",
                 fontWeight = FontWeight.W300
             )
         }

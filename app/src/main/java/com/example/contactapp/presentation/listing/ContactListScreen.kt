@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,6 +37,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +53,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +64,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.contactapp.domain.PhoneContact
 import com.example.contactapp.presentation.SharedViewModel
 import kotlinx.coroutines.delay
 
@@ -89,6 +99,20 @@ fun ContactListScreen(
         }
     }
 
+    val focusRequester = remember {
+        FocusRequester()
+    }
+    //search variables
+    var isSearching by rememberSaveable { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var searchList by rememberSaveable { mutableStateOf(emptyList<PhoneContact?>()) }
+
+    LaunchedEffect(isSearching) {
+        if (isSearching) {
+            delay(200)
+            focusRequester.requestFocus()
+        }
+    }
     LaunchedEffect(Unit) {
         permissionLauncher.launch(
             arrayOf(
@@ -97,7 +121,7 @@ fun ContactListScreen(
             )
         )
         delay(500)
-        if(permissionGranted.value){
+        if (permissionGranted.value) {
             sharedViewModel.loadPhoneContacts()
         }
     }
@@ -150,35 +174,65 @@ fun ContactListScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "My Contacts",
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            //Drawer Open
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = ""
+                    if (isSearching) {
+                        showTabRow = false
+                        TextField(
+                            colors = TextFieldDefaults.colors(
+                                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent
+                            ),
+                            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text("Search Contacts") },
+                            singleLine = true,
+                            textStyle = TextStyle(fontSize = 18.sp)
+                        )
+                    } else {
+                        Text(
+                            text = "My Contacts",
+                            modifier = Modifier.fillMaxWidth(),
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            //Search
+                navigationIcon = {
+                    if (!isSearching) {
+                        IconButton(
+                            onClick = {
+                                //Drawer Open
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = ""
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = ""
-                        )
+                    } else {
+                        IconButton(onClick = {
+                            isSearching = false
+                            searchQuery = ""
+                            showTabRow = true
+                        }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                },
+                actions = {
+                    if (!isSearching) {
+                        IconButton(
+                            onClick = {
+                                //Search
+                                isSearching = true
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = ""
+                            )
+                        }
                     }
                 }
             )
@@ -195,7 +249,7 @@ fun ContactListScreen(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.primary,
                         onClick = {
-                            if(isMobile) {
+                            if (isMobile) {
                                 val isCreate = true
                                 navController.navigate("add_contact/$isCreate")
                             }
@@ -213,6 +267,7 @@ fun ContactListScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(innerPadding)
         ) {
             if (apiContacts.loadState.refresh is LoadState.Loading) {
                 CircularProgressIndicator(
@@ -221,8 +276,7 @@ fun ContactListScreen(
             } else {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
+                        .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     AnimatedVisibility(
@@ -256,23 +310,59 @@ fun ContactListScreen(
                         when (selectedIndex) {
                             0 -> {
                                 sharedViewModel.isPhoneContactsOrApi(true)
-                                if(permissionGranted.value){
-                                    groupedContacts.forEach { (letter, names) ->
-                                        stickyHeader { SectionHeader(letter) }
-                                        items(names) { name ->
-                                            name.let {
+                                if (permissionGranted.value) {
+                                    if (!isSearching) {
+                                        groupedContacts.forEach { (letter, names) ->
+                                            stickyHeader { SectionHeader(letter) }
+                                            items(names) { name ->
+                                                name.let {
+                                                    PhoneContactItemUI(
+                                                        phoneContact = name,
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(horizontal = 32.dp)
+                                                            .clip(RoundedCornerShape(12.dp))
+                                                            .background(if (contactState.selectedPhoneContactId != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+                                                            .clickable {
+                                                                if (isMobile) navController.navigate(
+                                                                    "contact_Detail"
+                                                                )
+                                                                onAction(
+                                                                    ContactAction.SelectContactInPhone(
+                                                                        name
+                                                                    )
+                                                                )
+                                                                if (!isMobile) sharedViewModel.setIndexForPhone(
+                                                                    it.id
+                                                                )
+                                                            },
+                                                        isSelected = contactState.selectedPhoneContactId == it.id
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        searchList = contactState.phoneContactsList.filter {
+                                            it.displayName.lowercase().contains(
+                                                searchQuery.lowercase().trim()
+                                            )
+                                        }
+                                        items(searchList) {
+                                            if (it != null) {
                                                 PhoneContactItemUI(
-                                                    phoneContact = name,
+                                                    phoneContact = it,
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .padding(horizontal = 32.dp)
                                                         .clip(RoundedCornerShape(12.dp))
                                                         .background(if (contactState.selectedPhoneContactId != it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
                                                         .clickable {
-                                                            if (isMobile) navController.navigate("contact_Detail")
+                                                            if (isMobile) navController.navigate(
+                                                                "contact_Detail"
+                                                            )
                                                             onAction(
                                                                 ContactAction.SelectContactInPhone(
-                                                                    name
+                                                                    it
                                                                 )
                                                             )
                                                             if (!isMobile) sharedViewModel.setIndexForPhone(
@@ -281,6 +371,11 @@ fun ContactListScreen(
                                                         },
                                                     isSelected = contactState.selectedPhoneContactId == it.id
                                                 )
+                                            } else {
+                                                Text(
+                                                    text = "Not found",
+                                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                                )
                                             }
                                         }
                                     }
@@ -288,9 +383,13 @@ fun ContactListScreen(
                                         Spacer(modifier = Modifier.height(12.dp))
                                     }
                                 } else {
-                                    item{
+                                    item {
                                         Box(modifier = Modifier.fillParentMaxSize()) {
-                                            Text(text = "Please allow phone permission to \n     access contacts in \"Setting\"", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.align(Alignment.Center))
+                                            Text(
+                                                text = "Please allow phone permission to \n     access contacts in \"Setting\"",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                modifier = Modifier.align(Alignment.Center)
+                                            )
                                         }
                                     }
                                 }
