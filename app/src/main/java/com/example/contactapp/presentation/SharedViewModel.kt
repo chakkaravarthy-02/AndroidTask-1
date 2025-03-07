@@ -1,12 +1,12 @@
 package com.example.contactapp.presentation
 
-import android.content.ContentResolver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.example.contactapp.data.network.toContact
 import com.example.contactapp.domain.ContactRepository
+import com.example.contactapp.presentation.add_edit.AddEditAction
 import com.example.contactapp.presentation.detail.DetailAction
 import com.example.contactapp.presentation.detail.DetailViewState
 import com.example.contactapp.presentation.listing.ContactAction
@@ -77,6 +77,17 @@ class SharedViewModel(
     fun onDetailAction(detailAction: DetailAction) {
         when (detailAction) {
             is DetailAction.DeleteContact -> {
+                //TODO()
+            }
+        }
+    }
+
+    fun onAddEditAction(addEditAction: AddEditAction) {
+        when (addEditAction) {
+            is AddEditAction.EditContact -> {
+                //TODO()
+            }
+            is AddEditAction.SaveContact -> {
                 //TODO()
             }
         }

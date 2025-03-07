@@ -19,17 +19,15 @@ class ContactProvider(
             val idIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
             val nameIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
             val phoneIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-            val emailIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS)
             val photoIndex = it.getColumnIndex(ContactsContract.CommonDataKinds.Photo.PHOTO_URI)
 
             while (it.moveToNext()){
                 val id = it.getString(idIndex)
                 val name = it.getString(nameIndex) ?: "Unknown"
                 val phone = it.getString(phoneIndex) ?: ""
-                val email = if(emailIndex != -1) it.getString(emailIndex) else null
                 val photo = if(photoIndex != -1) it.getString(photoIndex) else null
 
-                contacts.add(PhoneContactTable(id = id, displayName = name, phoneNumber = phone, email = email, gender = null, picture = photo))
+                contacts.add(PhoneContactTable(id = id, displayName = name, phoneNumber = phone, picture = photo))
             }
         }
 

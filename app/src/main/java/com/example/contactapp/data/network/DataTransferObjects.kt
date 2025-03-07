@@ -44,8 +44,6 @@ fun List<PhoneContactTable>.toPhoneContact() : List<PhoneContact>{
         PhoneContact(
             id = it.id,
             displayName = it.displayName,
-            email = it.email,
-            gender = it.gender,
             phoneNumber = it.phoneNumber,
             picture = it.picture
         )

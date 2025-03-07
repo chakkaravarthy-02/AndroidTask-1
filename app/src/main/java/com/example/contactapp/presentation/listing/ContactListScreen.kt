@@ -1,10 +1,6 @@
 package com.example.contactapp.presentation.listing
 
 import android.Manifest
-import android.app.Activity
-import android.app.AlertDialog
-import android.widget.Toast
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -52,16 +48,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.example.contactapp.domain.PhoneContact
 import com.example.contactapp.presentation.SharedViewModel
 import kotlinx.coroutines.delay
 
@@ -202,7 +195,10 @@ fun ContactListScreen(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.primary,
                         onClick = {
-                            navController.navigate("add_contact")
+                            if(isMobile) {
+                                val isCreate = true
+                                navController.navigate("add_contact/$isCreate")
+                            }
                         }
                     ) {
                         Icon(

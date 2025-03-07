@@ -1,11 +1,11 @@
 package com.example.contactapp
 
-import android.app.AlertDialog
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -29,9 +29,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
 import com.example.compose.ContactAppTheme
@@ -40,10 +42,10 @@ import com.example.contactapp.data.network.ContactNetwork.contactNet
 import com.example.contactapp.data.provider.ContactProvider
 import com.example.contactapp.domain.ContactRepository
 import com.example.contactapp.presentation.SharedViewModel
+import com.example.contactapp.presentation.SharedViewModelFactory
+import com.example.contactapp.presentation.add_edit.AddEditScreen
 import com.example.contactapp.presentation.detail.DetailScreen
 import com.example.contactapp.presentation.listing.ContactListScreen
-import com.example.contactapp.presentation.SharedViewModelFactory
-import com.example.contactapp.presentation.add_edit.AddScreen
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -169,10 +171,16 @@ fun CompactScreen(
         composable(
             "contact_list_screen",
             enterTransition = {
-                slideInHorizontally { -it }
+                slideInHorizontally(
+                    initialOffsetX = { -it },
+                    animationSpec = tween(durationMillis = 500)
+                )
             },
             exitTransition = {
-                slideOutHorizontally { -it }
+                slideOutHorizontally(
+                    targetOffsetX = { -it },
+                    animationSpec = tween(durationMillis = 500)
+                )
             }
         ) {
             ContactListScreen(
@@ -185,10 +193,16 @@ fun CompactScreen(
         composable(
             "contact_detail",
             enterTransition = {
-                slideInHorizontally { it }
+                slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = tween(durationMillis = 500)
+                )
             },
             exitTransition = {
-                slideOutHorizontally { it }
+                slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween(durationMillis = 500)
+                )
             }
         ) {
             DetailScreen(
@@ -198,16 +212,26 @@ fun CompactScreen(
             )
         }
         composable(
-            "add_contact",
+            "add_contact/{isCreate}",
+            arguments = listOf(navArgument("isCreate") { type = NavType.BoolType }),
             enterTransition = {
-                slideInVertically { it }
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 500)
+                )
             },
             exitTransition = {
-                slideOutVertically { it }
+                slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(durationMillis = 500)
+                )
             }
-        ) {
-            AddScreen(
-                sharedViewModel = sharedViewModel
+        ) { backStackEntry ->
+            val isCreate = backStackEntry.arguments?.getBoolean("isCreate") ?: false
+            AddEditScreen(
+                sharedViewModel = sharedViewModel,
+                navController = navController,
+                isCreate = isCreate
             )
         }
     }
