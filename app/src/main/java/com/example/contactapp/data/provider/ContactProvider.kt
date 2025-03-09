@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.ContactsContract
-import android.widget.Toast
 import com.example.contactapp.data.contactdb.PhoneContactTable
 import java.io.ByteArrayOutputStream
 
@@ -59,8 +58,7 @@ class ContactProvider(
         return contacts
     }
 
-    fun updateContact(nameText: String?, picture: Uri?, phoneText: String?, surnameText: String) {
-        val contactId = getContactIdByPhoneNumber(phoneText)
+    fun updateContact(id:String?,nameText: String?, picture: Uri?, phoneText: String?, surnameText: String) {
         val operations = arrayListOf<ContentProviderOperation>()
 
         //update name
@@ -69,7 +67,7 @@ class ContactProvider(
                 .withSelection(
                     "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
                     arrayOf(
-                        contactId,
+                        id,
                         ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE
                     )
                 )
@@ -77,15 +75,15 @@ class ContactProvider(
                 .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, surnameText)
                 .build()
         )
-
         //update number
         operations.add(
             ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
                 .withSelection(
-                    "${ContactsContract.Data.RAW_CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
-                    arrayOf(contactId, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                    "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
+                    arrayOf(id, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                 )
                 .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneText)
+                .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
                 .build()
         )
 
@@ -96,8 +94,8 @@ class ContactProvider(
                 operations.add(
                     ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
                         .withSelection(
-                            "${ContactsContract.Data.RAW_CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
-                            arrayOf(contactId, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                            "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?",
+                            arrayOf(id, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
                         )
                         .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, photoBytes)
                         .build()
@@ -155,13 +153,16 @@ class ContactProvider(
 
         //add picture
         picture?.let {
-            operations.add(
-                ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                    .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, picture.toString())
-                    .build()
-            )
+            val photoBytes = getResizedBitmap(it)
+            if (photoBytes != null) {
+                operations.add(
+                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                        .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, photoBytes)
+                        .build()
+                )
+            }
         }
 
         try {
@@ -191,20 +192,6 @@ class ContactProvider(
 
         val selection = "${ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER} = ? OR ${ContactsContract.CommonDataKinds.Phone.NUMBER} = ?"
         val selectionArgs = arrayOf(phoneNumber, phoneNumber)
-
-        contentResolver.query(uri, projection, selection, selectionArgs, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                return cursor.getString(0)
-            }
-        }
-        return null
-    }
-
-    private fun getPhotoUri(contactId: String?): String? {
-        val uri = ContactsContract.Data.CONTENT_URI
-        val projection = arrayOf(ContactsContract.CommonDataKinds.Photo.PHOTO_URI)
-        val selection = "${ContactsContract.Data.CONTACT_ID} = ? AND ${ContactsContract.Data.MIMETYPE} = ?"
-        val selectionArgs = arrayOf(contactId, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
 
         contentResolver.query(uri, projection, selection, selectionArgs, null)?.use { cursor ->
             if (cursor.moveToFirst()) {

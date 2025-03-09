@@ -38,12 +38,13 @@ class ContactRepository(
     }
 
     fun updateContact(
+        id: String?,
         nameText: String?,
         phoneText: String?,
         surnameText: String,
         picture: Uri?
     ) {
-        contactProvider.updateContact(nameText,picture,phoneText,surnameText)
+        contactProvider.updateContact(id,nameText,picture,phoneText,surnameText)
     }
 
     fun saveContact(

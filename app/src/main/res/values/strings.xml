@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Contact App</string>
+    <string name="shortcut_long_label">Create a new contact</string>
+    <string name="shortcut_short_label">New Contact</string>
 </resources>

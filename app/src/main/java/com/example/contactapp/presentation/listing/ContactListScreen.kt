@@ -22,7 +22,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
@@ -58,6 +60,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -177,13 +180,18 @@ fun ContactListScreen(
                     if (isSearching) {
                         showTabRow = false
                         TextField(
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                capitalization = KeyboardCapitalization.Sentences
+                            ),
                             colors = TextFieldDefaults.colors(
                                 unfocusedContainerColor = MaterialTheme.colorScheme.background,
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent
                             ),
-                            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(focusRequester),
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
                             placeholder = { Text("Search Contacts") },
@@ -216,12 +224,12 @@ fun ContactListScreen(
                             searchQuery = ""
                             showTabRow = true
                         }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                         }
                     }
                 },
                 actions = {
-                    if (!isSearching) {
+                    if (!isSearching && selectedIndex == 0) {
                         IconButton(
                             onClick = {
                                 //Search
@@ -343,9 +351,11 @@ fun ContactListScreen(
                                         }
                                     } else {
                                         searchList = contactState.phoneContactsList.filter {
-                                            it.displayName.lowercase().contains(
-                                                searchQuery.lowercase().trim()
-                                            )
+                                            it.displayName.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            ) ||
+                                                    it.phoneNumber?.contains(searchQuery) == true
                                         }
                                         items(searchList) {
                                             if (it != null) {

@@ -57,12 +57,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val startDestination = if (intent?.data?.host == "create_contact") {
+            val value = true
+            "add_contact/$value"
+        } else {
+            "contact_list_screen"
+        }
         checkAndRequestPermission()
-        setUpContent()
+        setUpContent(startDestination)
 
     }
 
-    private fun setUpContent() {
+    private fun setUpContent(startDestination: String) {
         val db = getDatabase(applicationContext)
         val apiService = contactNet
         val contentResolver = this.contentResolver
@@ -118,12 +124,17 @@ class MainActivity : ComponentActivity() {
                     } else {
                         CompactScreen(
                             navController,
-                            sharedViewModel
+                            sharedViewModel,
+                            startDestination
                         )
                     }
                 }
             }
         }
+    }
+
+    private fun openCreateContactScreen(){
+
     }
 
     private fun checkAndRequestPermission() {
@@ -159,11 +170,12 @@ private fun isFlatLandscape(foldingFeature: FoldingFeature?): Boolean {
 fun CompactScreen(
     navController: NavHostController,
     sharedViewModel: SharedViewModel,
+    startDestination: String,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController,
-        startDestination = "contact_list_screen",
+        startDestination = startDestination,
     ) {
         composable(
             "contact_list_screen",

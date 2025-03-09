@@ -1,6 +1,9 @@
 package com.example.contactapp.presentation.detail
 
+import android.content.Context
+import android.content.Intent
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +25,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -47,6 +51,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,8 +59,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.contactapp.R
 import com.example.contactapp.presentation.SharedViewModel
-import com.example.contactapp.presentation.add_edit.AddEditScreen
-import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -196,6 +199,7 @@ fun DetailScreen(
                     )
                     Spacer(modifier = Modifier.padding(16.dp))
                     Text(
+                        textAlign = TextAlign.Center,
                         fontSize = 22.sp,
                         text = if (detailViewState.isPhoneContact == true)
                             "${detailViewState.selectedPhoneContact?.displayName}"
@@ -244,11 +248,41 @@ fun DetailScreen(
                             }
                         }
                     }
-                    //TODO
+                    Spacer(modifier = Modifier.height(12.dp))
+                    if (detailViewState.isPhoneContact == true) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.Start)
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable {
+                                    shareContact(
+                                        context,
+                                        detailViewState.selectedPhoneContact?.displayName,
+                                        detailViewState.selectedPhoneContact?.phoneNumber
+                                    )
+                                }
+                                .padding(16.dp)
+                        ) {
+                            Icon(imageVector = Icons.Filled.Share, contentDescription = "")
+                            Text("Share Contact")
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+fun shareContact(context: Context, name: String?, phone: String?) {
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, "Contact Details")
+        putExtra(Intent.EXTRA_TEXT, "Name: $name\nPhone: $phone")
+    }
+    context.startActivity(Intent.createChooser(shareIntent, "Share Contact"))
 }
 
 @Composable

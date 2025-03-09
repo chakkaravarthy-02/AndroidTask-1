@@ -95,6 +95,7 @@ class SharedViewModel(
                 viewModelScope.launch(Dispatchers.IO) {
                     try {
                         repository.updateContact(
+                            _detailState.value.selectedPhoneContact?.id,
                             addEditAction.nameText,
                             addEditAction.phoneText,
                             addEditAction.surnameText,
