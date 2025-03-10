@@ -19,8 +19,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -133,10 +136,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun openCreateContactScreen(){
-
-    }
-
     private fun checkAndRequestPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
             != PackageManager.PERMISSION_GRANTED &&
@@ -193,10 +192,11 @@ fun CompactScreen(
             }
         ) {
             ContactListScreen(
-                sharedViewModel = sharedViewModel,
                 onAction = sharedViewModel::onContactAction,
                 navController = navController,
+                sharedViewModel = sharedViewModel,
                 isMobile = true,
+                onChangeScreenToAdd = {}
             )
         }
         composable(
@@ -217,7 +217,8 @@ fun CompactScreen(
             DetailScreen(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
-                isMobile = true
+                isMobile = true,
+                onChangeScreenToAdd = {}
             )
         }
         composable(
@@ -240,7 +241,9 @@ fun CompactScreen(
             AddEditScreen(
                 sharedViewModel = sharedViewModel,
                 navController = navController,
-                isCreate = isCreate
+                isCreate = isCreate,
+                onChangeScreenToDetail = {},
+                isMobile = true
             )
         }
     }
@@ -254,22 +257,48 @@ fun ExpandedScreen(
     secondScreenFloat: Float,
     modifier: Modifier = Modifier,
 ) {
+    var isDetail by rememberSaveable { mutableStateOf(true) }
+    var isCreate by rememberSaveable { mutableStateOf(false) }
+    var isApi by rememberSaveable { mutableStateOf(false) }
+
     Row(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(firstScreenFloat)) {
             ContactListScreen(
-                sharedViewModel = sharedViewModel,
                 onAction = sharedViewModel::onContactAction,
                 navController = navController,
-                isMobile = false
+                sharedViewModel = sharedViewModel,
+                isMobile = false,
+                onChangeScreenToAdd = {
+                    isDetail = false
+                    isCreate = true
+                }
             )
         }
         VerticalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 2.dp)
-        Box(modifier = Modifier.weight(secondScreenFloat)) {
-            DetailScreen(
-                navController = navController,
-                sharedViewModel = sharedViewModel,
-                isMobile = false
-            )
+        if (isDetail) {
+            Box(modifier = Modifier.weight(secondScreenFloat)) {
+                DetailScreen(
+                    navController = navController,
+                    sharedViewModel = sharedViewModel,
+                    isMobile = false,
+                    onChangeScreenToAdd = {
+                        isDetail = false
+                        isCreate = false
+                    }
+                )
+            }
+        } else {
+            Box(modifier = Modifier.weight(secondScreenFloat)) {
+                AddEditScreen(
+                    navController = navController,
+                    sharedViewModel = sharedViewModel,
+                    isCreate = isCreate,
+                    onChangeScreenToDetail = {
+                        isDetail = true
+                    },
+                    isMobile = false
+                )
+            }
         }
     }
 }

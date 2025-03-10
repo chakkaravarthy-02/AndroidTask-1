@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,12 +66,15 @@ import com.example.contactapp.presentation.SharedViewModel
 fun DetailScreen(
     navController: NavController,
     sharedViewModel: SharedViewModel,
-    isMobile: Boolean
+    isMobile: Boolean,
+    onChangeScreenToAdd: () -> Unit
 ) {
     val detailViewState by sharedViewModel.detailState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+    val isPhoneContactNull = detailViewState.selectedPhoneContact == null
+    val isApiContactNull =detailViewState.selectedContact == null
 
     Scaffold(
         topBar = {
@@ -89,7 +93,7 @@ fun DetailScreen(
                             )
                         }
                     }
-                    if (!isMobile && detailViewState.selectedContact != null) {
+                    if (!isMobile && detailViewState.isPhoneContact == false && detailViewState.selectedContact != null) {
                         IconButton(
                             onClick = {
                                 sharedViewModel.resetSelectedContact()
@@ -109,8 +113,9 @@ fun DetailScreen(
                                 if (isMobile) {
                                     val isCreate = false
                                     navController.navigate("add_contact/$isCreate")
+                                } else {
+                                    onChangeScreenToAdd()
                                 }
-
                             }
                         ) {
                             Icon(
@@ -170,7 +175,14 @@ fun DetailScreen(
                     }
                 )
             }
-            if (!isMobile && detailViewState.selectedContact == null && detailViewState.selectedPhoneContact == null) {
+            if (!isMobile && detailViewState.isPhoneContact == false && isApiContactNull) {
+                Text(
+                    text = "Select a contact",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else if (!isMobile && detailViewState.isPhoneContact == true && isPhoneContactNull) {
                 Text(
                     text = "Select a contact",
                     fontSize = 20.sp,

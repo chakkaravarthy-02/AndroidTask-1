@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
@@ -45,15 +44,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.example.contactapp.R
 import com.example.contactapp.presentation.SharedViewModel
-import com.example.contactapp.presentation.listing.ContactAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,7 +56,9 @@ fun AddEditScreen(
     modifier: Modifier = Modifier,
     sharedViewModel: SharedViewModel,
     navController: NavController,
-    isCreate: Boolean
+    isCreate: Boolean,
+    onChangeScreenToDetail: () -> Unit,
+    isMobile: Boolean
 ) {
 
     val context = LocalContext.current
@@ -120,7 +117,11 @@ fun AddEditScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            navController.popBackStack()
+                            if (isMobile) {
+                                navController.popBackStack()
+                            } else {
+                                onChangeScreenToDetail()
+                            }
                         }
                     ) {
                         Icon(
@@ -142,7 +143,11 @@ fun AddEditScreen(
                                             imageUri.value
                                         )
                                     )
-                                    navController.popBackStack()
+                                    if (isMobile) {
+                                        navController.popBackStack()
+                                    } else {
+                                        onChangeScreenToDetail()
+                                    }
                                     "Contact Saved successfully"
                                 } else {
                                     sharedViewModel.onAddEditAction(
@@ -153,12 +158,16 @@ fun AddEditScreen(
                                             imageUri.value
                                         )
                                     )
-                                    navController.navigate(
-                                        "contact_list_Screen"
-                                    ){
-                                        popUpTo("contact_detail"){
-                                            inclusive = true
+                                    if (isMobile) {
+                                        navController.navigate(
+                                            "contact_list_Screen"
+                                        ) {
+                                            popUpTo("contact_detail") {
+                                                inclusive = true
+                                            }
                                         }
+                                    } else {
+                                        onChangeScreenToDetail()
                                     }
                                     "Edited"
                                 }

@@ -55,8 +55,7 @@ class SharedViewModel(
             is ContactAction.SelectContactInApi -> {
                 viewModelScope.launch {
                     _detailState.value = _detailState.value.copy(
-                        selectedContact = contactAction.contact,
-                        selectedPhoneContact = null
+                        selectedContact = contactAction.contact
                     )
                     delay(3000L)
                 }
@@ -65,8 +64,7 @@ class SharedViewModel(
             is ContactAction.SelectContactInPhone -> {
                 viewModelScope.launch {
                     _detailState.value = _detailState.value.copy(
-                        selectedPhoneContact = contactAction.contact,
-                        selectedContact = null
+                        selectedPhoneContact = contactAction.contact
                     )
                     delay(3000L)
                 }
@@ -81,7 +79,7 @@ class SharedViewModel(
                     try {
                         repository.deleteContact(detailAction.contact?.phoneNumber)
                         loadPhoneContacts()
-                    }catch (e: Exception){
+                    } catch (e: Exception) {
                         println("$e error in deleting the contact")
                     }
                 }
@@ -101,7 +99,7 @@ class SharedViewModel(
                             addEditAction.surnameText,
                             addEditAction.picture
                         )
-                    }catch (e: Exception){
+                    } catch (e: Exception) {
                         println("$e error in updating the contact")
                     }
                 }
@@ -116,7 +114,7 @@ class SharedViewModel(
                             addEditAction.surnameText,
                             addEditAction.picture
                         )
-                    }catch (e: Exception){
+                    } catch (e: Exception) {
                         println("$e error in saving the contact")
                     }
                 }
@@ -132,8 +130,9 @@ class SharedViewModel(
     }
 
     fun resetSelectedContact() {
-        _detailState.value.selectedContact = null
-        _detailState.value.selectedPhoneContact = null
+        _detailState.value = _detailState.value.copy(
+            selectedContact = null
+        )
         _contactViewState.value = _contactViewState.value.copy(
             selectedContactId = null,
             selectedPhoneContactId = null

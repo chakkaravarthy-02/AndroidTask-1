@@ -12,7 +12,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,8 +25,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +37,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -79,7 +75,8 @@ fun ContactListScreen(
     onAction: (ContactAction) -> Unit,
     navController: NavController,
     sharedViewModel: SharedViewModel,
-    isMobile: Boolean
+    isMobile: Boolean,
+    onChangeScreenToAdd: () -> Unit,
 ) {
     if (isMobile) {
         sharedViewModel.resetSelectedId()
@@ -207,18 +204,7 @@ fun ContactListScreen(
                     }
                 },
                 navigationIcon = {
-                    if (!isSearching) {
-                        IconButton(
-                            onClick = {
-                                //Drawer Open
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = ""
-                            )
-                        }
-                    } else {
+                    if (isSearching) {
                         IconButton(onClick = {
                             isSearching = false
                             searchQuery = ""
@@ -246,28 +232,28 @@ fun ContactListScreen(
             )
         },
         floatingActionButton = {
-            if (selectedIndex == 0) {
-                AnimatedVisibility(
-                    visible = showTabRow,
-                    enter = slideInVertically(initialOffsetY = { it }),
-                    exit = slideOutVertically(targetOffsetY = { it })
-                ) {
-                    FloatingActionButton(
-                        modifier = Modifier.padding(16.dp),
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.primary,
-                        onClick = {
-                            if (isMobile) {
-                                val isCreate = true
-                                navController.navigate("add_contact/$isCreate")
-                            }
+            AnimatedVisibility(
+                visible = showTabRow,
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it })
+            ) {
+                FloatingActionButton(
+                    modifier = Modifier.padding(16.dp),
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    onClick = {
+                        if (isMobile) {
+                            val isCreate = true
+                            navController.navigate("add_contact/$isCreate")
+                        } else {
+                            onChangeScreenToAdd()
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = ""
-                        )
                     }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = ""
+                    )
                 }
             }
         }
