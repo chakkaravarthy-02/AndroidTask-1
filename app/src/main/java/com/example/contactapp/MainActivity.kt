@@ -55,8 +55,6 @@ import kotlin.contracts.contract
 
 class MainActivity : ComponentActivity() {
 
-    private val CONTACT_PERMISSION_REQUEST = 1
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -145,7 +143,7 @@ class MainActivity : ComponentActivity() {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS),
-                CONTACT_PERMISSION_REQUEST
+                1
             )
         }
     }
@@ -169,8 +167,7 @@ private fun isFlatLandscape(foldingFeature: FoldingFeature?): Boolean {
 fun CompactScreen(
     navController: NavHostController,
     sharedViewModel: SharedViewModel,
-    startDestination: String,
-    modifier: Modifier = Modifier
+    startDestination: String
 ) {
     NavHost(
         navController,
@@ -255,11 +252,9 @@ fun ExpandedScreen(
     sharedViewModel: SharedViewModel,
     firstScreenFloat: Float,
     secondScreenFloat: Float,
-    modifier: Modifier = Modifier,
 ) {
     var isDetail by rememberSaveable { mutableStateOf(true) }
     var isCreate by rememberSaveable { mutableStateOf(false) }
-    var isApi by rememberSaveable { mutableStateOf(false) }
 
     Row(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(firstScreenFloat)) {
@@ -290,8 +285,8 @@ fun ExpandedScreen(
         } else {
             Box(modifier = Modifier.weight(secondScreenFloat)) {
                 AddEditScreen(
-                    navController = navController,
                     sharedViewModel = sharedViewModel,
+                    navController = navController,
                     isCreate = isCreate,
                     onChangeScreenToDetail = {
                         isDetail = true

@@ -53,7 +53,6 @@ import com.example.contactapp.presentation.SharedViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditScreen(
-    modifier: Modifier = Modifier,
     sharedViewModel: SharedViewModel,
     navController: NavController,
     isCreate: Boolean,
@@ -223,7 +222,7 @@ fun AddEditScreen(
 
             OutlinedTextField(
                 maxLines = 1,
-                value = surnameText.value ?: "",
+                value = surnameText.value,
                 onValueChange = { new ->
                     surnameText.value = new
                 },

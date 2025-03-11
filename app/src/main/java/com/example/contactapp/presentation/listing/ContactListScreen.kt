@@ -71,7 +71,6 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ContactListScreen(
-    modifier: Modifier = Modifier,
     onAction: (ContactAction) -> Unit,
     navController: NavController,
     sharedViewModel: SharedViewModel,
@@ -92,11 +91,7 @@ fun ContactListScreen(
         val readGranted = permissions[Manifest.permission.READ_CONTACTS] ?: false
         val writeGranted = permissions[Manifest.permission.WRITE_CONTACTS] ?: false
 
-        if (readGranted && writeGranted) {
-            permissionGranted.value = true
-        } else {
-            permissionGranted.value = false
-        }
+        permissionGranted.value = readGranted && writeGranted
     }
 
     val focusRequester = remember {
