@@ -117,7 +117,13 @@ fun AddEditScreen(
                     IconButton(
                         onClick = {
                             if (isMobile) {
-                                navController.popBackStack()
+                                navController.navigate(
+                                    "contact_list_Screen"
+                                ) {
+                                    popUpTo("contact_detail") {
+                                        inclusive = true
+                                    }
+                                }
                             } else {
                                 onChangeScreenToDetail()
                             }

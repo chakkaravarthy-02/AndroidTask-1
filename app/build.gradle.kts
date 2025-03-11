@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     kotlin("plugin.serialization") version "1.9.0"
+    id ("kotlin-parcelize")
 }
 
 android {
@@ -83,14 +84,14 @@ dependencies {
     implementation(libs.androidx.room.paging)
 
     //ktor
-    implementation("io.ktor:ktor-client-core:2.3.3")
-    implementation("io.ktor:ktor-client-cio:2.3.3")
-    implementation("io.ktor:ktor-client-serialization:2.3.3")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.3")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.serialization)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.kotlinx.serialization.json)
 
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.3")
+    implementation(libs.gson)
+    implementation(libs.ktor.serialization.kotlinx.json)
 
 }
