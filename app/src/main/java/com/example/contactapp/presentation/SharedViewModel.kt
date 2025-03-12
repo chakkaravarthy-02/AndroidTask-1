@@ -29,7 +29,7 @@ class SharedViewModel(
             val response = repository.getAllPhoneContacts()
             withContext(Dispatchers.Main) {
                 _contactViewState.value = _contactViewState.value.copy(
-                    phoneContactsList = response
+                    phoneContactsList = response.distinctBy {  it.phoneNumber?.trim()?.replace(" ", "")?.lowercase() }
                 )
             }
         }
