@@ -103,17 +103,5 @@ Each screen follows the **MVI (Model-View-Intent)** pattern.
 
 ---
 
-## 🚀 **Contributing**
-
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-
----
-
-## 📝 **License**
-
-MIT License. See `LICENSE` for more details.
-
----
-
 **Happy Coding! 🚀**
 
