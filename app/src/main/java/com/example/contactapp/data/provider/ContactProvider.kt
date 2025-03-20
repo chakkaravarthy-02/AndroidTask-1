@@ -58,7 +58,13 @@ class ContactProvider(
         return contacts
     }
 
-    fun updateContact(id:String?,nameText: String?, picture: Uri?, phoneText: String?, surnameText: String) {
+    fun updateContact(
+        id: String?,
+        nameText: String?,
+        picture: Uri?,
+        phoneText: String?,
+        surnameText: String
+    ) {
         val operations = arrayListOf<ContentProviderOperation>()
 
         //update name
@@ -83,7 +89,10 @@ class ContactProvider(
                     arrayOf(id, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
                 )
                 .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneText)
-                .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
+                .withValue(
+                    ContactsContract.CommonDataKinds.Phone.TYPE,
+                    ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE
+                )
                 .build()
         )
 
@@ -158,7 +167,10 @@ class ContactProvider(
                 operations.add(
                     ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                        .withValue(
+                            ContactsContract.Data.MIMETYPE,
+                            ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE
+                        )
                         .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, photoBytes)
                         .build()
                 )
@@ -176,7 +188,10 @@ class ContactProvider(
         val contactId = getContactIdByPhoneNumber(phoneNumber)
         if (contactId != null) {
             val deleteUri =
-                ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId.toLong())
+                ContentUris.withAppendedId(
+                    ContactsContract.Contacts.CONTENT_URI,
+                    contactId.toLong()
+                )
             val rowsDeleted = contentResolver.delete(deleteUri, null, null)
             if (rowsDeleted > 0) {
                 println("deleted")
@@ -190,7 +205,8 @@ class ContactProvider(
         val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
         val projection = arrayOf(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
 
-        val selection = "${ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER} = ? OR ${ContactsContract.CommonDataKinds.Phone.NUMBER} = ?"
+        val selection =
+            "${ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER} = ? OR ${ContactsContract.CommonDataKinds.Phone.NUMBER} = ?"
         val selectionArgs = arrayOf(phoneNumber, phoneNumber)
 
         contentResolver.query(uri, projection, selection, selectionArgs, null)?.use { cursor ->
@@ -209,7 +225,7 @@ class ContactProvider(
         bitmap?.let {
             val scaledBitmap = Bitmap.createScaledBitmap(it, maxSize, maxSize, true)
             val outputStream = ByteArrayOutputStream()
-            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputStream) // Compress to JPEG with 75% quality
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 75, outputStream)
             return outputStream.toByteArray()
         }
         return null
