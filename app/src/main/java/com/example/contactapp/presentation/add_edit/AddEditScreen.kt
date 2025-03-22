@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,12 +35,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -110,6 +114,19 @@ fun AddEditScreen(
     }
 
     val message = sharedViewModel.message.collectAsStateWithLifecycle()
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    ShowImagePickerDialog(
+        showDialog = showDialog,
+        onDismiss = { showDialog = false },
+        onTakePhoto = {
+            cameraPermission.launch(Manifest.permission.CAMERA)
+        },
+        onChooseFromGallery = {
+            pickImageLauncher.launch("image/*")
+        }
+    )
 
     Scaffold(
         topBar = {
@@ -216,7 +233,7 @@ fun AddEditScreen(
                     .size(150.dp)
                     .clip(CircleShape)
                     .clickable {
-                        showImagePickerDialog(context, cameraPermission, pickImageLauncher)
+                        showDialog = true
                     },
                 model = imageUri.value ?: R.drawable.images_upload,
                 contentDescription = "",
@@ -224,7 +241,7 @@ fun AddEditScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(modifier = Modifier.clickable {
-                showImagePickerDialog(context, cameraPermission, pickImageLauncher)
+                showDialog = true
             }, text = "Add photo", color = Color(0xFF3299EC))
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -279,22 +296,35 @@ fun getTempImageUri(context: Context): Uri? {
         contentValues
     )
 }
-
-fun showImagePickerDialog(
-    context: Context,
-    cameraPermission: ManagedActivityResultLauncher<String, Boolean>,
-    pickImageLauncher: ManagedActivityResultLauncher<String, Uri?>
+@Composable
+fun ShowImagePickerDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    onTakePhoto: () -> Unit,
+    onChooseFromGallery: () -> Unit
 ) {
-    AlertDialog.Builder(context)
-        .setTitle("Select Image")
-        .setItems(arrayOf("Take Photo", "Choose from Gallery")) { _, which ->
-            if (which == 0) {
-                cameraPermission.launch(Manifest.permission.CAMERA)
-            } else {
-                pickImageLauncher.launch("image/*")
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { onDismiss() },
+            title = { Text(text = "Select Image") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onChooseFromGallery()
+                    onDismiss()
+                }) {
+                    Text("Choose from Gallery")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    onTakePhoto()
+                    onDismiss()
+                }) {
+                    Text("Take Photo")
+                }
             }
-        }
-        .show()
+        )
+    }
 }
 
 
