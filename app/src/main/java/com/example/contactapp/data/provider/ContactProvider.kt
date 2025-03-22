@@ -64,7 +64,7 @@ class ContactProvider(
         picture: Uri?,
         phoneText: String?,
         surnameText: String
-    ) {
+    ): String? {
         val operations = arrayListOf<ContentProviderOperation>()
 
         //update name
@@ -118,10 +118,12 @@ class ContactProvider(
         } catch (e: Exception) {
             e.printStackTrace()
             println("update")
+            return null
         }
+        return "Edited"
     }
 
-    fun saveContact(nameText: String?, picture: Uri?, phoneText: String?, surnameText: String) {
+    fun saveContact(nameText: String?, picture: Uri?, phoneText: String?, surnameText: String): String? {
         val operations = arrayListOf<ContentProviderOperation>()
 
         //add raw contact
@@ -181,7 +183,9 @@ class ContactProvider(
             contentResolver.applyBatch(ContactsContract.AUTHORITY, operations)
         } catch (e: Exception) {
             e.printStackTrace()
+            return null
         }
+        return "Contact saved"
     }
 
     fun deleteContact(phoneNumber: String?) {

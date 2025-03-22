@@ -29,7 +29,7 @@ class SharedViewModel(
             val response = repository.getAllPhoneContacts()
             withContext(Dispatchers.Main) {
                 _contactViewState.value = _contactViewState.value.copy(
-                    phoneContactsList = response.distinctBy {  it.phoneNumber?.trim()?.replace(" ", "")?.lowercase() }
+                    phoneContactsList = response
                 )
             }
         }
@@ -42,6 +42,8 @@ class SharedViewModel(
         }
         .cachedIn(viewModelScope)
 
+    private val _message = MutableStateFlow<String?>(null)
+    var message: StateFlow<String?> = _message
 
     private val _contactViewState = MutableStateFlow(ContactViewState())
     var contactViewState: StateFlow<ContactViewState> = _contactViewState
@@ -92,7 +94,7 @@ class SharedViewModel(
             is AddEditAction.EditContact -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     try {
-                        repository.updateContact(
+                        _message.value = repository.updateContact(
                             _detailState.value.selectedPhoneContact?.id,
                             addEditAction.nameText,
                             addEditAction.phoneText,
@@ -108,7 +110,7 @@ class SharedViewModel(
             is AddEditAction.SaveContact -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     try {
-                        repository.saveContact(
+                        _message.value = repository.saveContact(
                             addEditAction.nameText,
                             addEditAction.phoneText,
                             addEditAction.surnameText,

@@ -39,7 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
-import com.example.compose.ContactAppTheme
+import com.example.contactapp.ui.theme.ContactAppTheme
 import com.example.contactapp.data.contactdb.getDatabase
 import com.example.contactapp.data.network.ContactNetwork.contactNet
 import com.example.contactapp.data.provider.ContactProvider
@@ -66,7 +66,6 @@ class MainActivity : ComponentActivity() {
         }
         checkAndRequestPermission()
         setUpContent(startDestination)
-
     }
 
     private fun setUpContent(startDestination: String) {
@@ -136,7 +135,7 @@ class MainActivity : ComponentActivity() {
 
     private fun checkAndRequestPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-            != PackageManager.PERMISSION_GRANTED &&
+            != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CONTACTS)
             != PackageManager.PERMISSION_GRANTED
         ) {

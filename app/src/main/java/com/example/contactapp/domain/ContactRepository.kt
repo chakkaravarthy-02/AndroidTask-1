@@ -43,8 +43,8 @@ class ContactRepository(
         phoneText: String?,
         surnameText: String,
         picture: Uri?
-    ) {
-        contactProvider.updateContact(id,nameText,picture,phoneText,surnameText)
+    ): String? {
+        return contactProvider.updateContact(id,nameText,picture,phoneText,surnameText)
     }
 
     fun saveContact(
@@ -52,8 +52,8 @@ class ContactRepository(
         phoneText: String?,
         surnameText: String,
         picture: Uri?
-    ) {
-        contactProvider.saveContact(nameText,picture,phoneText,surnameText)
+    ): String? {
+        return contactProvider.saveContact(nameText,picture,phoneText,surnameText)
     }
 
     suspend fun deleteContact(phoneNumber: String?) {

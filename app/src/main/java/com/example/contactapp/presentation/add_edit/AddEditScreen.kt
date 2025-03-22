@@ -1,6 +1,7 @@
 package com.example.contactapp.presentation.add_edit
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Context
@@ -36,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -45,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.contactapp.R
@@ -61,6 +64,8 @@ fun AddEditScreen(
 ) {
 
     val context = LocalContext.current
+    val activity = context as? Activity
+
     val nameText = rememberSaveable {
         mutableStateOf(if (isCreate) "" else sharedViewModel.detailState.value.selectedPhoneContact?.displayName)
     }
@@ -104,6 +109,8 @@ fun AddEditScreen(
         }
     }
 
+    val message = sharedViewModel.message.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -138,8 +145,10 @@ fun AddEditScreen(
                 actions = {
                     Button(
                         onClick = {
-                            val message =
-                                if (isCreate) {
+                            if (isCreate) {
+                                if(nameText.value?.isBlank() == true && phoneText.value?.isBlank() == true && surnameText.value.isBlank() && imageUri.value==null){
+                                    Toast.makeText(context,"please specify at least one field",Toast.LENGTH_SHORT).show()
+                                }else {
                                     sharedViewModel.onAddEditAction(
                                         AddEditAction.SaveContact(
                                             nameText.value,
@@ -149,34 +158,39 @@ fun AddEditScreen(
                                         )
                                     )
                                     if (isMobile) {
-                                        navController.popBackStack()
-                                    } else {
-                                        onChangeScreenToDetail()
-                                    }
-                                    "Contact Saved successfully"
-                                } else {
-                                    sharedViewModel.onAddEditAction(
-                                        AddEditAction.EditContact(
-                                            nameText.value,
-                                            phoneText.value,
-                                            surnameText.value,
-                                            imageUri.value
-                                        )
-                                    )
-                                    if (isMobile) {
-                                        navController.navigate(
-                                            "contact_list_Screen"
-                                        ) {
-                                            popUpTo("contact_detail") {
-                                                inclusive = true
-                                            }
+                                        if (navController.previousBackStackEntry != null) {
+                                            navController.popBackStack()
+                                        } else {
+                                            activity?.finish()
                                         }
                                     } else {
                                         onChangeScreenToDetail()
                                     }
-                                    "Edited"
                                 }
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            } else {
+                                sharedViewModel.onAddEditAction(
+                                    AddEditAction.EditContact(
+                                        nameText.value,
+                                        phoneText.value,
+                                        surnameText.value,
+                                        imageUri.value
+                                    )
+                                )
+                                if (isMobile) {
+                                    navController.navigate(
+                                        "contact_list_Screen"
+                                    ) {
+                                        popUpTo("contact_detail") {
+                                            inclusive = true
+                                        }
+                                    }
+                                } else {
+                                    onChangeScreenToDetail()
+                                }
+                            }
+                            if(message.value != null){
+                                Toast.makeText(context, message.value, Toast.LENGTH_SHORT).show()
+                            }
                         }
                     ) {
                         Text(text = if (isCreate) "Save" else "Edit")
